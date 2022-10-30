@@ -1,5 +1,6 @@
 #include "Blob.h"
 #include <math.h>
+#include <iostream>
 
 Blob::Blob(const double SIZE)
 {
@@ -19,6 +20,21 @@ Blob::Blob()
 
 Blob::~Blob()
 {
+}
+
+void Blob::bounce(const double a)
+{
+    angle;
+}
+
+void Blob::bounceX()
+{
+    angle = -angle;
+}
+
+void Blob::bounceY()
+{
+    angle = -angle;
 }
 
 bool Blob::checkCollision(sf::CircleShape a)
@@ -44,7 +60,7 @@ bool Blob::checkCollision(sf::CircleShape a)
 
 sf::FloatRect Blob::getFloatRect()
 {
-    return sf::FloatRect();
+    return getGlobalBounds();
 }
 
 sf::Vector2f Blob::getPos()
@@ -64,6 +80,7 @@ sf::CircleShape Blob::getShape()
 
 void Blob::update()
 {
+    std::cout << angle << std::endl;
     movePosition();
     smoothSizeChange();
 }
@@ -101,7 +118,7 @@ void Blob::movePosition()
 
 void Blob::smoothSizeChange()
 {
-    setRadius(lerp(getRadius(), blobSize, 0.1f));
+    setRadius(lerp(getRadius(), blobSize, 0.3f));
     setOrigin(getRadius(), getRadius());
 }
 

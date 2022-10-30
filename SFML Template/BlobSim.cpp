@@ -132,42 +132,10 @@ void BlobSim::collisionChecks()
 				{
 					//Left and right border
 					if (k >= 0 && k <= 1)
-						blobs[i].setAngle(rand() + 90 % 360);
+						blobs[i].bounceX();
 					//Top and bottom border
 					if (k >= 2 && k <= 3)
-						blobs[i].set_speed(blobs[i].get_speed().x, blobs[i].get_speed().y * -1);
-
-					//Left border
-					if (k == 0)
-					{
-						blobs[i].set_position(
-							(borders[0].getPosition().x + borders[0].getGlobalBounds().width) +
-							(blobs[i].getFloatRect().width / 4),
-							blobs[i].get_position().y);
-					}
-					//Right border
-					else if (k == 1)
-					{
-						blobs[i].set_position(
-							(borders[1].getPosition().x) -
-							(blobs[i].getFloatRect().width / 1.3),
-							blobs[i].get_position().y);
-					}
-
-					//Top border
-					if (k == 2)
-					{
-						blobs[i].set_position(blobs[i].get_position().x,
-							(borders[2].getPosition().y + borders[2].getGlobalBounds().height) +
-							(blobs[i].getFloatRect().height / 4));
-					}
-					//Bottom border
-					else if (k == 3)
-					{
-						blobs[i].set_position(blobs[i].get_position().x,
-							(borders[3].getPosition().y) -
-							(blobs[i].getFloatRect().height / 1.3));
-					}
+						blobs[i].bounceY();
 				}
 			}
 		}

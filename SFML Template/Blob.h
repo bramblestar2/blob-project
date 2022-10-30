@@ -8,6 +8,10 @@ public:
 	Blob();
 	~Blob();
 
+	void bounce(const double);
+	void bounceX();
+	void bounceY();
+
 	void setSpeed(const double);
 	void setSize(const double);
 	void setColor(sf::Color);

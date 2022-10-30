@@ -5,7 +5,7 @@ Window::Window()
 	initWindow();
 
 	sim = BlobSim();
-	sim.newSimulation(40, sf::Vector2u(window->getSize().x - 60,
+	sim.newSimulation(1, sf::Vector2u(window->getSize().x - 60,
 									   window->getSize().y - 60));
 	sim.setSlingEvent(window);
 }
@@ -49,7 +49,7 @@ void Window::updateSFMLEvents()
 		if (event.type == sf::Event::KeyPressed)
 		{
 			if (event.key.code == sf::Keyboard::Space)
-				sim.newSimulation(40, sf::Vector2u(window->getSize().x - 60,
+				sim.newSimulation(1, sf::Vector2u(window->getSize().x - 60,
 												   window->getSize().y - 60));
 		}
 	}
