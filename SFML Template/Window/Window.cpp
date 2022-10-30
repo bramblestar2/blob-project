@@ -3,6 +3,11 @@
 Window::Window()
 {
 	initWindow();
+
+	sim = BlobSim();
+	sim.newSimulation(40, sf::Vector2u(window->getSize().x - 60,
+									   window->getSize().y - 60));
+	sim.setSlingEvent(window);
 }
 
 Window::~Window()
@@ -15,7 +20,6 @@ void Window::run()
 	while (window->isOpen())
 	{
 		update();
-		updateDt();
 		updateSFMLEvents();
 		render();
 	}
@@ -25,16 +29,14 @@ void Window::render()
 {
 	window->clear();
 
+	sim.draw(window);
+
 	window->display();
 }
 
 void Window::update()
 {
-}
-
-void Window::updateDt()
-{
-	dt = dtClock.restart().asSeconds();
+	sim.update();
 }
 
 void Window::updateSFMLEvents()
@@ -44,10 +46,17 @@ void Window::updateSFMLEvents()
 		if (event.type == sf::Event::Closed ||
 			event.key.code == sf::Keyboard::Escape)
 			window->close();
+		if (event.type == sf::Event::KeyPressed)
+		{
+			if (event.key.code == sf::Keyboard::Space)
+				sim.newSimulation(40, sf::Vector2u(window->getSize().x - 60,
+												   window->getSize().y - 60));
+		}
 	}
 }
 
 void Window::initWindow()
 {
-	window = new sf::RenderWindow(sf::VideoMode(100, 100), "TITLE", sf::Style::Default);
+	window = new sf::RenderWindow(sf::VideoMode(600, 600), "TITLE", sf::Style::Default);
+	window->setFramerateLimit(30);
 }

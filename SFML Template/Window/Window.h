@@ -1,5 +1,6 @@
 #pragma once
 #include <SFML/Graphics.hpp>
+#include "../BlobSim.h"
 
 class Window
 {
@@ -11,7 +12,6 @@ public:
 	void run();
 	void render();
 	void update();
-	void updateDt();
 	void updateSFMLEvents();
 private:
 	void initWindow();
@@ -21,5 +21,7 @@ private:
 
 	sf::RenderWindow* window;
 	sf::Event event;
+
+	BlobSim sim;
 };
 
