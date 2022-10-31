@@ -8,7 +8,7 @@ public:
 	Blob();
 	~Blob();
 
-	void bounce(const double);
+	double bounce();
 	void bounceX();
 	void bounceY();
 
@@ -37,6 +37,7 @@ public:
 	Blob& operator+=(Blob& right);
 private:
 	sf::Vector2f calculateDirection();
+	double calculateAngle();
 	void movePosition();
 	void smoothSizeChange(); //Smooth Visuals
 	float lerp(float, float, float); //interpolation - Smooth Visuals

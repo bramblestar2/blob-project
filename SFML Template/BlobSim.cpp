@@ -50,7 +50,7 @@ void BlobSim::newSimulation(const int BLOB_COUNT, const sf::Vector2u SPAWN_AREA)
 		(blobs + i)->setSpeed(5);
 		(blobs + i)->setPos(sf::Vector2f(rand() % SPAWN_AREA.x + 30,
 										 rand() % SPAWN_AREA.x + 30));
-		(blobs + i)->setAngle(rand() % 360);
+		(blobs + i)->setAngle((double)(rand() % 360)/100.);
 	}
 }
 
@@ -58,6 +58,8 @@ void BlobSim::update()
 {
 	if (blobCount != NULL && blobs != nullptr)
 	{
+		if (window != nullptr)
+			slingShot();
 		collisionChecks();
 		for (int i = 0; i < blobCount; i++)
 		{
@@ -73,7 +75,7 @@ void BlobSim::draw(sf::RenderWindow* window)
 		for (int i = 0; i < blobCount; i++)
 		{
 			blobs[i].draw(window);
-			if (debug)
+			//if (debug)
 				blobs[i].drawDirectionLine(window);
 		}
 
@@ -104,10 +106,8 @@ void BlobSim::collisionChecks()
 	{
 		if (blobs[i].getSize() > 5.f)
 		{
-			for (int k = 0; k < blobCount; k++)
+			for (int k = i + 1; k < blobCount; k++)
 			{
-				if (k != i)
-				{
 					if (blobs[i].checkCollision(blobs[k].getShape()))
 					{
 						if (blobs[i] > blobs[k])
@@ -122,7 +122,6 @@ void BlobSim::collisionChecks()
 							blobs[k].setAngle(blobs[k].getAngle() + 180 % 360);
 						}
 					}
-				}
 			}
 
 			//Borders
@@ -149,4 +148,21 @@ sf::Vector2f BlobSim::getMinMax()
 
 void BlobSim::slingShot()
 {
+	if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
+	{
+		for (int i = 0; i < blobCount; i++)
+		{
+			sf::Vector2i pointOne = sf::Mouse::getPosition(*window);
+			if (blobs[i].getFloatRect().contains(sf::Vector2f(sf::Mouse::getPosition(*window))))
+			{
+				sf::Vector2i pointTwo = sf::Mouse::getPosition(*window);
+				while (sf::Mouse::isButtonPressed(sf::Mouse::Left))
+				{
+					pointTwo = sf::Mouse::getPosition(*window);
+				}
+
+				blobs[i].setAngle(atan2(pointOne.y - pointTwo.y, pointOne.x - pointTwo.x));
+			}
+		}
+	}
 }

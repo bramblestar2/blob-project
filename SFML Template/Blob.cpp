@@ -22,14 +22,31 @@ Blob::~Blob()
 {
 }
 
-void Blob::bounce(const double a)
+double Blob::bounce()
 {
-    angle;
+    sf::Vector2f dir = calculateDirection();
+    double newAngle = angle - (3.14 / 2);
+    sf::Vector2f pointTwo = sf::Vector2f(getPos().x + (dir.x * blobSize * 2), getPos().y + (dir.y * blobSize * 2));
 }
 
 void Blob::bounceX()
 {
-    angle = -angle;
+    if (abs(angle) < 1.5)
+    {
+        if (angle > 0.)
+            angle += 3.14/2;
+        else
+            angle -= 3.14/2;
+    }
+    else
+    {
+        if (angle > 1.5)
+            angle += 3.14/2;
+        else
+            angle -= 3.14/2;
+    }
+
+    angle = fmod(angle, 3.14);
 }
 
 void Blob::bounceY()
@@ -80,7 +97,7 @@ sf::CircleShape Blob::getShape()
 
 void Blob::update()
 {
-    std::cout << angle << std::endl;
+    std::cout << angle << " - " << calculateAngle() << std::endl;
     movePosition();
     smoothSizeChange();
 }
@@ -96,7 +113,7 @@ void Blob::drawDirectionLine(sf::RenderWindow* window)
     sf::Vector2f dir = calculateDirection();
 
     line[0].position = getPosition();
-    line[1].position = sf::Vector2f((dir.x * blobSize)*1.5, (dir.y * blobSize)*1.5);
+    line[1].position = sf::Vector2f(getPos().x + (dir.x * blobSize * 2), getPos().y + (dir.y * blobSize * 2));
     
     line[0].color = sf::Color(0,0,255);
     line[1].color = sf::Color(0,0,255);
@@ -108,6 +125,16 @@ void Blob::drawDirectionLine(sf::RenderWindow* window)
 sf::Vector2f Blob::calculateDirection()
 {
     return sf::Vector2f(cos(angle), sin(angle));
+}
+
+double Blob::calculateAngle()
+{
+    sf::Vector2f dir = calculateDirection();
+
+    sf::Vector2f pointOne = getPos();
+    sf::Vector2f pointTwo = sf::Vector2f(getPos().x + (dir.x * blobSize * 2), getPos().y + (dir.y * blobSize * 2));
+
+    return atan2(pointTwo.y - pointOne.y, pointTwo.x - pointOne.x);
 }
 
 void Blob::movePosition()
