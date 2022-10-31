@@ -24,34 +24,25 @@ Blob::~Blob()
 
 double Blob::bounce()
 {
-    sf::Vector2f dir = calculateDirection();
+    sf::Vector2f dir = calculateDirection(angle);
     double newAngle = angle - (3.14 / 2);
     sf::Vector2f pointTwo = sf::Vector2f(getPos().x + (dir.x * blobSize * 2), getPos().y + (dir.y * blobSize * 2));
+    return 0;
 }
 
 void Blob::bounceX()
 {
-    if (abs(angle) < 1.5)
-    {
-        if (angle > 0.)
-            angle += 3.14/2;
-        else
-            angle -= 3.14/2;
-    }
-    else
-    {
-        if (angle > 1.5)
-            angle += 3.14/2;
-        else
-            angle -= 3.14/2;
-    }
-
-    angle = fmod(angle, 3.14);
+    angle = fmod((angle + (3.14/2)), (2 * 3.14));
 }
 
 void Blob::bounceY()
 {
     angle = -angle;
+}
+
+double Blob::calculateReflection(const double a)
+{
+    return 0.0;
 }
 
 bool Blob::checkCollision(sf::CircleShape a)
@@ -67,7 +58,7 @@ bool Blob::checkCollision(sf::CircleShape a)
     }
 
     //Is colliding if distance is less than a + b
-    if (distance < getRadius() + a.getRadius())
+    if (distance < (getRadius() + a.getRadius())/1.2)
     {
         colliding = true;
     }
@@ -90,6 +81,11 @@ double Blob::getSize()
     return blobSize;
 }
 
+double Blob::getSpeed()
+{
+    return speed;
+}
+
 sf::CircleShape Blob::getShape()
 {
     return *this;
@@ -97,8 +93,10 @@ sf::CircleShape Blob::getShape()
 
 void Blob::update()
 {
-    std::cout << angle << " - " << calculateAngle() << std::endl;
-    movePosition();
+    if (blobSize > 1)
+    {
+        movePosition();
+    }
     smoothSizeChange();
 }
 
@@ -110,7 +108,7 @@ void Blob::draw(sf::RenderWindow* window)
 void Blob::drawDirectionLine(sf::RenderWindow* window)
 {
     sf::VertexArray line(sf::Lines, 2);
-    sf::Vector2f dir = calculateDirection();
+    sf::Vector2f dir = calculateDirection(angle);
 
     line[0].position = getPosition();
     line[1].position = sf::Vector2f(getPos().x + (dir.x * blobSize * 2), getPos().y + (dir.y * blobSize * 2));
@@ -122,15 +120,13 @@ void Blob::drawDirectionLine(sf::RenderWindow* window)
 }
 
 
-sf::Vector2f Blob::calculateDirection()
+sf::Vector2f Blob::calculateDirection(const double angle)
 {
     return sf::Vector2f(cos(angle), sin(angle));
 }
 
-double Blob::calculateAngle()
+double Blob::calculateAngle(sf::Vector2f dir)
 {
-    sf::Vector2f dir = calculateDirection();
-
     sf::Vector2f pointOne = getPos();
     sf::Vector2f pointTwo = sf::Vector2f(getPos().x + (dir.x * blobSize * 2), getPos().y + (dir.y * blobSize * 2));
 
@@ -139,8 +135,8 @@ double Blob::calculateAngle()
 
 void Blob::movePosition()
 {
-    sf::Vector2f dir = calculateDirection();
-    move(dir.x * speed, dir.y * speed);
+    sf::Vector2f dir = calculateDirection(angle);
+    move((dir.x * speed) / (blobSize / 20), (dir.y * speed) / (blobSize / 20));
 }
 
 void Blob::smoothSizeChange()

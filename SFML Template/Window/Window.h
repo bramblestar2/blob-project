@@ -23,5 +23,6 @@ private:
 	sf::Event event;
 
 	BlobSim sim;
+	const int blobCount = 100;
 };
 

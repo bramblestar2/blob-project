@@ -7,6 +7,10 @@ BlobSim::BlobSim()
 	srand(time(NULL));
 	initVariables();
 
+	loadOrderDebug = false;
+	debug = false;
+	blobsStart = -1;
+
 	window_size = sf::Vector2u(600, 600);
 	//Left and right Borders
 	borders[0].setFillColor(sf::Color::Blue);
@@ -46,7 +50,7 @@ void BlobSim::newSimulation(const int BLOB_COUNT, const sf::Vector2u SPAWN_AREA)
 
 	for (int i = 0; i < BLOB_COUNT; i++)
 	{
-		*(blobs + i) = Blob(rand() % 30 + 11);
+		*(blobs + i) = Blob(rand() % 10 + 11);
 		(blobs + i)->setSpeed(5);
 		(blobs + i)->setPos(sf::Vector2f(rand() % SPAWN_AREA.x + 30,
 										 rand() % SPAWN_AREA.x + 30));
@@ -54,33 +58,97 @@ void BlobSim::newSimulation(const int BLOB_COUNT, const sf::Vector2u SPAWN_AREA)
 	}
 }
 
+void BlobSim::updateEvents(const sf::Event event)
+{
+	if (event.type == sf::Event::KeyPressed)
+	{
+		if (event.key.code == sf::Keyboard::H)
+		{
+			debug = debug ? false : true;
+		}
+		if (event.key.code == sf::Keyboard::G)
+			loadOrderDebug = loadOrderDebug ? false : true;
+	}
+}
+
 void BlobSim::update()
 {
 	if (blobCount != NULL && blobs != nullptr)
 	{
+		blobsStart = -1;
+		for (int i = 0; i < blobCount; i++)
+			if (blobs[i].getSize() > 1)
+				if (blobsStart == -1)
+					blobsStart = i;
+
 		if (window != nullptr)
 			slingShot();
+
+		changeLoadOrder();
+
 		collisionChecks();
+		
 		for (int i = 0; i < blobCount; i++)
 		{
 			blobs[i].update();
+			blobs[i].setColor(calculateColor(blobs[i].getSize(), 
+							  blobs[i].getColor(), getMinMax()));
 		}
 	}
 }
 
 void BlobSim::draw(sf::RenderWindow* window)
 {
-	
 	if (blobCount != NULL && blobs != nullptr)
-		for (int i = 0; i < blobCount; i++)
+	{
+		for (int i = blobsStart; i < blobCount; i++)
 		{
 			blobs[i].draw(window);
-			//if (debug)
+			if (debug)
 				blobs[i].drawDirectionLine(window);
 		}
 
+		if (loadOrderDebug)
+		{
+			sf::VertexArray connections(sf::LinesStrip, blobCount);
+			for (int i = blobsStart; i < blobCount - 1; i++)
+			{
+				connections[i].position = blobs[i].getPos();
+				connections[i + 1].position = blobs[i + 1].getPos();
+				if (blobs[i].getSize() < blobs[i + 1].getSize() + 2 && blobs[i].getSize() > blobs[i + 1].getSize() - 2)
+				{
+					connections[i].color = sf::Color::Red;
+					connections[i+1].color = sf::Color::Yellow;
+				}
+
+			}
+			window->draw(connections);
+		}
+	}
 	for (int i = 0; i < 4; i++)
 		window->draw(borders[i]);
+}
+
+void BlobSim::changeLoadOrder()
+{
+	bubbleSort();
+}
+
+void BlobSim::swapPtr(Blob& a, Blob& b)
+{
+	Blob temp = a;
+	a = b;
+	b = temp;
+}
+
+void BlobSim::bubbleSort()
+{
+	for (int i = 0; i < blobCount - 1; i++)
+		for (int k = 0; k < blobCount - i - 1; k++)
+		{
+			if (blobs[k].getSize() > blobs[k+1].getSize())
+				swapPtr(blobs[k], blobs[k+1]);
+		}
 }
 
 void BlobSim::initVariables()
@@ -90,9 +158,15 @@ void BlobSim::initVariables()
 	window = nullptr;
 }
 
-sf::Color BlobSim::calculateColor(const float BLOB_SIZE, const sf::Color CURRENT_COLOR)
+sf::Color BlobSim::calculateColor(const float BLOB_SIZE, const sf::Color CURRENT_COLOR, const sf::Vector2f MAXMIN)
 {
-	return sf::Color();
+	float num = MAXMIN.x - (MAXMIN.y - 1);
+	float percentage = ((BLOB_SIZE - (MAXMIN.y - 1)) / num) * 100;
+
+	float t = 0.1f;
+
+	return sf::Color(lerp(CURRENT_COLOR.r, (percentage * 230) / 100, t),
+		150, lerp(CURRENT_COLOR.g, (percentage * 150) / 100, t));
 }
 
 float BlobSim::lerp(float a, float b, float t)
@@ -102,24 +176,26 @@ float BlobSim::lerp(float a, float b, float t)
 
 void BlobSim::collisionChecks()
 {
-	for (int i = 0; i < blobCount; i++)
+	for (int i = blobsStart; i < blobCount; i++)
 	{
 		if (blobs[i].getSize() > 5.f)
 		{
-			for (int k = i + 1; k < blobCount; k++)
+			for (int k = blobsStart; k < blobCount; k++)
 			{
+				if (k != i)
 					if (blobs[i].checkCollision(blobs[k].getShape()))
 					{
-						if (blobs[i] > blobs[k])
+						if (blobs[i].getSize() > blobs[k].getSize() + 2)
 							blobs[i] += blobs[k];
-						else if (blobs[i] < blobs[k])
+						else if (blobs[i].getSize() < blobs[k].getSize() - 2)
 							blobs[k] += blobs[i];
 						else
 						{
-							//Bounce off ball
-							//Temp solution
-							blobs[i].setAngle(blobs[i].getAngle() + 180 % 360);
-							blobs[k].setAngle(blobs[k].getAngle() + 180 % 360);
+							sf::Vector2f posOne = blobs[i].getPos();
+							sf::Vector2f posTwo = blobs[k].getPos();
+
+							blobs[i].setAngle(blobs[k].calculateAngle(-(posTwo - posOne)));
+							blobs[k].setAngle(blobs[i].calculateAngle((posTwo - posOne)));
 						}
 					}
 			}
@@ -131,29 +207,86 @@ void BlobSim::collisionChecks()
 				{
 					//Left and right border
 					if (k >= 0 && k <= 1)
-						blobs[i].bounceX();
+					{
+						sf::Vector2f posOne = blobs[i].getPos();
+						sf::Vector2f posTwo;
+
+						if (k == 0) //Left border
+						{
+							posTwo = sf::Vector2f(borders[0].getPosition().x + (blobs[i].getSize() * 2), posOne.y);
+							blobs[i].setPos(sf::Vector2f((borders[0].getPosition().x + borders[0].getLocalBounds().width) 
+														 + blobs[i].getSize(), blobs[i].getPos().y));
+						}
+						else //Right border
+						{
+							posTwo = sf::Vector2f(borders[1].getPosition().x, posOne.y);
+							blobs[i].setPos(sf::Vector2f(borders[1].getPosition().x - blobs[i].getSize(), blobs[i].getPos().y));
+						}
+
+						double perpAngle = blobs[i].calculateAngle(posOne - posTwo);
+
+						blobs[i].setAngle(perpAngle-blobs[i].getAngle());
+					}
 					//Top and bottom border
 					if (k >= 2 && k <= 3)
+					{
 						blobs[i].bounceY();
+
+						if (k == 2) //Top
+							blobs[i].setPos(sf::Vector2f(blobs[i].getPos().x, 
+								(borders[k].getPosition().y + borders[k].getLocalBounds().height) + blobs[i].getSize()));
+						else //Bottom
+							blobs[i].setPos(sf::Vector2f(blobs[i].getPos().x,
+								borders[k].getPosition().y - blobs[i].getSize()));
+
+					}
 				}
 			}
 		}
 	}
 }
 
+//returns v2f(MAX, MIN)
+//returns -1 for both if theres no blobs
 sf::Vector2f BlobSim::getMinMax()
 {
-	return sf::Vector2f();
+	double max = -1, min = -1;
+	bool start = false;
+	for (int i = 0; i < blobCount; i++)
+	{
+		if (blobs[i].getSize() > 1)
+		{
+			if (!start)
+			{
+				max = blobs[i].getSize();
+				min = blobs[i].getSize();
+				start = true;
+			}
+			else
+			{
+				if (blobs[i].getSize() > max)
+					max = blobs[i].getSize();
+				else if (blobs[i].getSize() < min)
+					min = blobs[i].getSize();
+			}
+		}
+	}
+
+	return sf::Vector2f(max, min);
 }
 
 void BlobSim::slingShot()
 {
 	if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
 	{
-		for (int i = 0; i < blobCount; i++)
+		for (int i = blobsStart; i < blobCount; i++)
 		{
+			double xDistance = pow(blobs[i].getPos().x - sf::Mouse::getPosition(*window).x, 2);
+			double yDistance = pow(blobs[i].getPos().y - sf::Mouse::getPosition(*window).y, 2);
+			double distance = sqrt(xDistance + yDistance);
+
 			sf::Vector2i pointOne = sf::Mouse::getPosition(*window);
-			if (blobs[i].getFloatRect().contains(sf::Vector2f(sf::Mouse::getPosition(*window))))
+			if (distance < blobs[i].getSize())
 			{
 				sf::Vector2i pointTwo = sf::Mouse::getPosition(*window);
 				while (sf::Mouse::isButtonPressed(sf::Mouse::Left))

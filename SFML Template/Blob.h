@@ -19,13 +19,17 @@ public:
 	void setAngle(const double);
 
 	double getAngle();
+	double getSize();
+	double getSpeed();
 	sf::Color getColor();
 	sf::FloatRect getFloatRect();
 	sf::Vector2f getPos();
-	double getSize();
 	sf::CircleShape getShape();
 
+	double calculateReflection(const double);
+	double calculateAngle(sf::Vector2f);
 	bool checkCollision(sf::CircleShape);
+	sf::Vector2f calculateDirection(const double);
 
 	void update();
 	void draw(sf::RenderWindow* window);
@@ -36,8 +40,6 @@ public:
 	bool operator==(Blob& right);
 	Blob& operator+=(Blob& right);
 private:
-	sf::Vector2f calculateDirection();
-	double calculateAngle();
 	void movePosition();
 	void smoothSizeChange(); //Smooth Visuals
 	float lerp(float, float, float); //interpolation - Smooth Visuals
