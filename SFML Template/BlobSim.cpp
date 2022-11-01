@@ -111,66 +111,77 @@ void BlobSim::draw(sf::RenderWindow* window)
 			if (debug)
 				blobs[i].drawDirectionLine(window);
 		}
-
-		if (loadOrderDebug)
-		{
-			//sf::VertexArray connections(sf::LinesStrip, blobCount);
-
-			sf::VertexArray connections(sf::LinesStrip, 0);
-
-			for (int i = blobsStart; i < blobCount; i++)
-			{
-				if (blobs[i].getShape().getGlobalBounds().contains((sf::Vector2f)sf::Mouse::getPosition(*window)))
-				{
-					for (int k = blobsStart; k < blobCount; k++)
-					{
-						if (i != k)
-						{
-								connections.append(sf::Vertex());
-								connections.append(sf::Vertex());
-								connections[connections.getVertexCount() - 2].position = blobs[i].getPos();
-								connections[connections.getVertexCount() - 1].position = blobs[k].getPos();
-								connections[connections.getVertexCount() - 2].color = sf::Color(255,255,255,50);
-								connections[connections.getVertexCount() - 1].color = sf::Color(255,255,255,50);
-
-							if (blobs[i].getSize() < blobs[k].getSize() + 2 &&
-								blobs[i].getSize() > blobs[k].getSize() - 2)
-							{
-								connections[connections.getVertexCount() - 2].color = sf::Color(255,0,0);
-								connections[connections.getVertexCount() - 1].color = sf::Color(255,0,0);
-							}
-						}
-					}
-				}
-
-				sf::Text text;
-				text.setFont(font);
-				text.setPosition(blobs[i].getPos());
-				text.setString(std::to_string(blobCount-i));
-				text.setCharacterSize(blobs[i].getSize()/2);
-				text.setOrigin(text.getGlobalBounds().width/2, text.getGlobalBounds().height/2);
-
-				window->draw(text);
-				
-			}
-
-			//for (int i = blobsStart; i < blobCount - 1; i++)
-			//{
-			//	connections[i].position = blobs[i].getPos();
-			//	connections[i + 1].position = blobs[i + 1].getPos();
-			//	if (blobs[i].getSize() < blobs[i + 1].getSize() + 2 &&
-			//		blobs[i].getSize() > blobs[i + 1].getSize() - 2)
-			//	{
-			//		connections[i].color = sf::Color::Red;
-			//		connections[i+1].color = sf::Color::Yellow;
-			//	}
-			//
-			//}
-			window->draw(connections);
-		}
 	}
 	for (int i = 0; i < 4; i++)
 		window->draw(borders[i]);
+
+
+	if (loadOrderDebug && blobCount != NULL && blobs != nullptr)
+	{
+		debugging(window);
+	}
+}
+
+void BlobSim::debugging(sf::RenderWindow* window)
+{
+	sf::VertexArray connections(sf::LinesStrip, 0);
+
+	for (int i = blobsStart; i < blobCount; i++)
+	{
+		if (blobs[i].getShape().getGlobalBounds().contains((sf::Vector2f)sf::Mouse::getPosition(*window)))
+		{
+			for (int k = blobsStart; k < blobCount; k++)
+			{
+				if (i != k)
+				{
+					connections.append(sf::Vertex());
+					connections.append(sf::Vertex());
+					connections[connections.getVertexCount() - 2].position = blobs[i].getPos();
+					connections[connections.getVertexCount() - 1].position = blobs[k].getPos();
+					connections[connections.getVertexCount() - 2].color = sf::Color(255, 255, 255, 50);
+					connections[connections.getVertexCount() - 1].color = sf::Color(255, 255, 255, 50);
+
+					if (blobs[i].getSize() < blobs[k].getSize() + 2 &&
+						blobs[i].getSize() > blobs[k].getSize() - 2)
+					{
+						connections[connections.getVertexCount() - 2].color = sf::Color(255, 0, 0);
+						connections[connections.getVertexCount() - 1].color = sf::Color(255, 0, 0);
+					}
+
+					//0 - Position
+					//1 - Blop size
+					//2 - Color
+					sf::Text debugText[3];
+
+					debugText[0].setString(std::to_string(blobs[i].getPos().x) + " - " + std::to_string(blobs[i].getPos().y));
+					debugText[1].setString(std::to_string(blobs[i].getSize()));
+					debugText[2].setString(std::to_string(blobs[i].getColor().r) + " / " +
+						std::to_string(blobs[i].getColor().g) + " / " + std::to_string(blobs[i].getColor().b));
+
+					for (int k = 0; k < 3; k++)
+					{
+						debugText[k].setCharacterSize(20);
+						debugText[k].setFont(font);
+						debugText[k].setPosition(sf::Vector2f(0, debugText[k].getGlobalBounds().height * (k*2)));
+
+						window->draw(debugText[k]);
+					}
+				}
+			}
+		}
+
+		//Shows order on the blobs
+		sf::Text text;
+		text.setFont(font);
+		text.setPosition(blobs[i].getPos());
+		text.setString(std::to_string(blobCount - i));
+		text.setCharacterSize(blobs[i].getSize() / 2);
+		text.setOrigin(text.getGlobalBounds().width / 2, text.getGlobalBounds().height / 2);
+
+		window->draw(text);
+
+	}
+	window->draw(connections);
 }
 
 void BlobSim::changeLoadOrder()

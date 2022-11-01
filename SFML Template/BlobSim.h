@@ -8,18 +8,19 @@ public:
 	BlobSim();
 	~BlobSim(); //Free memory here
 
-	void setSlingEvent(sf::RenderWindow* window); //For fun
+	void setSlingEvent(sf::RenderWindow*); //For fun
 	void slingShot(); //For fun
-	void newSimulation(const int BLOB_COUNT, const sf::Vector2u SPAWN_AREA);
+	void newSimulation(const int, const sf::Vector2u);
 
 	void updateEvents(const sf::Event);
 	void update();
-	void draw(sf::RenderWindow* window);
+	void draw(sf::RenderWindow*);
 private:
 	//smallest to biggest blob
 	void changeLoadOrder();
 	void swapPtr(Blob&, Blob&);
 	void bubbleSort();
+	void debugging(sf::RenderWindow*);
 
 	void initVariables();
 
