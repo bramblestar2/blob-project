@@ -1,11 +1,14 @@
 #include "BlobSim.h"
 #include <time.h>
 #include <iostream>
+#include <string>
 
 BlobSim::BlobSim()
 {
 	srand(time(NULL));
 	initVariables();
+
+	font.loadFromFile("Fonts/font1.ttf");
 
 	loadOrderDebug = false;
 	debug = false;
@@ -103,25 +106,66 @@ void BlobSim::draw(sf::RenderWindow* window)
 	{
 		for (int i = blobsStart; i < blobCount; i++)
 		{
-			blobs[i].draw(window);
+			window->draw(blobs[i].getShape());
+			//blobs[i].draw(window);
 			if (debug)
 				blobs[i].drawDirectionLine(window);
 		}
 
 		if (loadOrderDebug)
 		{
-			sf::VertexArray connections(sf::LinesStrip, blobCount);
-			for (int i = blobsStart; i < blobCount - 1; i++)
+			//sf::VertexArray connections(sf::LinesStrip, blobCount);
+
+			sf::VertexArray connections(sf::LinesStrip, 0);
+
+			for (int i = blobsStart; i < blobCount; i++)
 			{
-				connections[i].position = blobs[i].getPos();
-				connections[i + 1].position = blobs[i + 1].getPos();
-				if (blobs[i].getSize() < blobs[i + 1].getSize() + 2 && blobs[i].getSize() > blobs[i + 1].getSize() - 2)
+				if (blobs[i].getShape().getGlobalBounds().contains((sf::Vector2f)sf::Mouse::getPosition(*window)))
 				{
-					connections[i].color = sf::Color::Red;
-					connections[i+1].color = sf::Color::Yellow;
+					for (int k = blobsStart; k < blobCount; k++)
+					{
+						if (i != k)
+						{
+								connections.append(sf::Vertex());
+								connections.append(sf::Vertex());
+								connections[connections.getVertexCount() - 2].position = blobs[i].getPos();
+								connections[connections.getVertexCount() - 1].position = blobs[k].getPos();
+								connections[connections.getVertexCount() - 2].color = sf::Color(255,255,255,50);
+								connections[connections.getVertexCount() - 1].color = sf::Color(255,255,255,50);
+
+							if (blobs[i].getSize() < blobs[k].getSize() + 2 &&
+								blobs[i].getSize() > blobs[k].getSize() - 2)
+							{
+								connections[connections.getVertexCount() - 2].color = sf::Color(255,0,0);
+								connections[connections.getVertexCount() - 1].color = sf::Color(255,0,0);
+							}
+						}
+					}
 				}
 
+				sf::Text text;
+				text.setFont(font);
+				text.setPosition(blobs[i].getPos());
+				text.setString(std::to_string(blobCount-i));
+				text.setCharacterSize(blobs[i].getSize()/2);
+				text.setOrigin(text.getGlobalBounds().width/2, text.getGlobalBounds().height/2);
+
+				window->draw(text);
+				
 			}
+
+			//for (int i = blobsStart; i < blobCount - 1; i++)
+			//{
+			//	connections[i].position = blobs[i].getPos();
+			//	connections[i + 1].position = blobs[i + 1].getPos();
+			//	if (blobs[i].getSize() < blobs[i + 1].getSize() + 2 &&
+			//		blobs[i].getSize() > blobs[i + 1].getSize() - 2)
+			//	{
+			//		connections[i].color = sf::Color::Red;
+			//		connections[i+1].color = sf::Color::Yellow;
+			//	}
+			//
+			//}
 			window->draw(connections);
 		}
 	}
@@ -196,6 +240,8 @@ void BlobSim::collisionChecks()
 
 							blobs[i].setAngle(blobs[k].calculateAngle(-(posTwo - posOne)));
 							blobs[k].setAngle(blobs[i].calculateAngle((posTwo - posOne)));
+							blobs[i].setSpeed(blobs[i].getSpeed() + (blobs[i].getSpeed() * 0.2));
+							blobs[k].setSpeed(blobs[k].getSpeed() + (blobs[k].getSpeed() * 0.2));
 						}
 					}
 			}

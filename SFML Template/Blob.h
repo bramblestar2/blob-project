@@ -1,5 +1,6 @@
 #pragma once
 #include <SFML/Graphics.hpp>
+#include "ShaderTest.h"
 
 class Blob : private sf::CircleShape
 {

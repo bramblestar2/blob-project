@@ -1,6 +1,7 @@
 #pragma once
 #include <SFML/Graphics.hpp>
 #include "../BlobSim.h"
+#include "../ShaderTest.h"
 
 class Window
 {
@@ -15,14 +16,15 @@ public:
 	void updateSFMLEvents();
 private:
 	void initWindow();
-	
-	sf::Clock dtClock;
-	double dt;
+
+	bool paused;
 
 	sf::RenderWindow* window;
 	sf::Event event;
 
 	BlobSim sim;
-	const int blobCount = 100;
+	int blobCount;
+
+	//ShaderTest shader;
 };
 
