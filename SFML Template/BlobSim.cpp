@@ -130,7 +130,7 @@ void BlobSim::debugging(sf::RenderWindow* window)
 	{
 		if (blobs[i].getShape().getGlobalBounds().contains((sf::Vector2f)sf::Mouse::getPosition(*window)))
 		{
-			for (int k = blobsStart; k < blobCount; k++)
+			for (int k = blobsStart; k <= blobCount; k++)
 			{
 				if (i != k)
 				{
@@ -150,15 +150,22 @@ void BlobSim::debugging(sf::RenderWindow* window)
 
 					//0 - Position
 					//1 - Blop size
-					//2 - Color
-					sf::Text debugText[3];
+					//2 - Angle / Speed
+					//3 - Color
+					sf::Text debugText[4];
 
-					debugText[0].setString(std::to_string(blobs[i].getPos().x) + " - " + std::to_string(blobs[i].getPos().y));
-					debugText[1].setString(std::to_string(blobs[i].getSize()));
-					debugText[2].setString(std::to_string(blobs[i].getColor().r) + " / " +
-						std::to_string(blobs[i].getColor().g) + " / " + std::to_string(blobs[i].getColor().b));
+					debugText[0].setString(std::to_string(blobs[i].getPos().x) + " (X) - " + 
+						std::to_string(blobs[i].getPos().y) + " (Y)");
 
-					for (int k = 0; k < 3; k++)
+					debugText[1].setString(std::to_string(blobs[i].getSize()) + " (Size)");
+
+					debugText[2].setString(std::to_string(blobs[i].getAngle()) + " (Angle) / " + 
+						std::to_string(blobs[i].getSpeed()) + " (Speed)");
+
+					debugText[3].setString(std::to_string(blobs[i].getColor().r) + "(R) / " +
+						std::to_string(blobs[i].getColor().g) + "(G) / " + std::to_string(blobs[i].getColor().b) + " (B)");
+
+					for (int k = 0; k < 4; k++)
 					{
 						debugText[k].setCharacterSize(20);
 						debugText[k].setFont(font);
