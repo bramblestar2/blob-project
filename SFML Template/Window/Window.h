@@ -25,6 +25,6 @@ private:
 	BlobSim sim;
 	int blobCount;
 
-	//ShaderTest shader;
+	ShaderTest shader;
 };
 

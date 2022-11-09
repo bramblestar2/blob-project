@@ -8,7 +8,7 @@ BlobSim::BlobSim()
 	srand(time(NULL));
 	initVariables();
 
-	font.loadFromFile("Fonts/font1.ttf");
+	font.loadFromFile("Fonts/font2.ttf");
 
 	loadOrderDebug = false;
 	debug = false;
@@ -53,6 +53,7 @@ void BlobSim::newSimulation(const int BLOB_COUNT, const sf::Vector2u SPAWN_AREA)
 
 	for (int i = 0; i < BLOB_COUNT; i++)
 	{
+		//*(blobs + i) = Blob(21);
 		*(blobs + i) = Blob(rand() % 10 + 11);
 		(blobs + i)->setSpeed(5);
 		(blobs + i)->setPos(sf::Vector2f(rand() % SPAWN_AREA.x + 30,
@@ -125,10 +126,21 @@ void BlobSim::draw(sf::RenderWindow* window)
 void BlobSim::debugging(sf::RenderWindow* window)
 {
 	sf::VertexArray connections(sf::LinesStrip, 0);
+	sf::Vector2f mousePos = (sf::Vector2f)sf::Mouse::getPosition(*window);
+
+	//0 - Position
+	//1 - Blop size
+	//2 - Angle / Speed
+	//3 - Color
+	sf::Text debugText[4];
 
 	for (int i = blobsStart; i < blobCount; i++)
 	{
-		if (blobs[i].getShape().getGlobalBounds().contains((sf::Vector2f)sf::Mouse::getPosition(*window)))
+		double xDistance = pow(mousePos.x - blobs[i].getShape().getPosition().x, 2);
+		double yDistance = pow(mousePos.y - blobs[i].getShape().getPosition().y, 2);
+		double distance = sqrt(xDistance + yDistance);
+
+		if (distance < blobs[i].getSize())
 		{
 			for (int k = blobsStart; k <= blobCount; k++)
 			{
@@ -148,12 +160,6 @@ void BlobSim::debugging(sf::RenderWindow* window)
 						connections[connections.getVertexCount() - 1].color = sf::Color(255, 0, 0);
 					}
 
-					//0 - Position
-					//1 - Blop size
-					//2 - Angle / Speed
-					//3 - Color
-					sf::Text debugText[4];
-
 					debugText[0].setString(std::to_string(blobs[i].getPos().x) + " (X) - " + 
 						std::to_string(blobs[i].getPos().y) + " (Y)");
 
@@ -169,12 +175,11 @@ void BlobSim::debugging(sf::RenderWindow* window)
 					{
 						debugText[k].setCharacterSize(20);
 						debugText[k].setFont(font);
-						debugText[k].setPosition(sf::Vector2f(0, debugText[k].getGlobalBounds().height * (k*2)));
-
-						window->draw(debugText[k]);
+						debugText[k].setPosition(sf::Vector2f(0, debugText[k].getGlobalBounds().height * (k * 2)));
 					}
 				}
 			}
+
 		}
 
 		//Shows order on the blobs
@@ -188,6 +193,10 @@ void BlobSim::debugging(sf::RenderWindow* window)
 		window->draw(text);
 
 	}
+
+	for (int k = 0; k < 4 && debugText != NULL; k++)
+		window->draw(debugText[k]);
+
 	window->draw(connections);
 }
 
@@ -305,6 +314,14 @@ void BlobSim::collisionChecks()
 
 					}
 				}
+			}
+
+			//Check when out of bounds
+			if (blobs[i].getPos().x > 600 || blobs[i].getPos().x < 0 ||
+				blobs[i].getPos().y > 600 || blobs[i].getPos().y < 0)
+			{
+				blobs[i].setPos(sf::Vector2f(300, 300));
+				blobs[i].setSpeed(blobs[i].getSpeed() / 2);
 			}
 		}
 	}
